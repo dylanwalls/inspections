@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lease Inspections Form</title>
+    <style>
+        /* Add your custom CSS styles here */
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+        }
+        #signatureCanvas {
+            border: 1px solid #000;
+        }
+    </style>
+    <script src="{{ url_for('static', filename='js/dynamic_form.js') }}" defer></script>
+    <script src="https://unpkg.com/signature_pad"></script>
+    <script>
+        let signaturePad; // Declare the signaturePad variable outside the event listener
+
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const canvas = document.getElementById('signatureCanvas');
+            signaturePad = new SignaturePad(canvas); // Assign the signaturePad instance to the variable
+
+            // Automatically save the signature when the form is submitted
+            document.getElementById('dynamic-form').addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent the default form submission behavior
+
+                const form = event.target; // Get the form element
+
+                // Get the form data
+                const formData = new FormData(form);
+
+                // Get the signature data
+                const signatureData = signaturePad.toDataURL();
+                formData.append('signature', signatureData); // Add the signature data to the form data
+                document.getElementById('signature-field').value = signatureData; // Set the value of the hidden input field
+
+                // Send the form values to the Flask endpoint
+                fetch("/", {
+                    method: "POST",
+                    body: formData, // Send form data as multipart/form-data
+                })
+                .then((response) => response.text())
+                .then((data) => {
+                    console.log(data);
+                    // Handle the response here (e.g., show a success message)
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    // Handle errors here (e.g., show an error message)
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Lease Inspections Form</h1>
+    <form id="dynamic-form" method="POST">
+        <div id="dynamic-form-container"></div>
+    </form>
+</body>
+</html>
+
+
+
